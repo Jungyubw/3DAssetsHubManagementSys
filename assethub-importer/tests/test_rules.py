@@ -8,6 +8,11 @@ def test_excluded_folder_matches_glob_and_case():
     pats = CFG["selection"]["exclude_folders"]
     assert rules.excluded_folder("AED/웹콘텐츠/_이전_v1.14/3D에셋/glb", pats) == "_이전_v1.14"
     assert rules.excluded_folder("AED/Backup/glb", pats) == "Backup"
+    assert rules.excluded_folder("03. 3D라이브러리/#08.개발GLB_bak", pats) == "#08.개발GLB_bak"
+    assert rules.excluded_folder("캐릭터/2022 캐릭터 백업", pats) == "2022 캐릭터 백업"
+    assert rules.excluded_folder("99. 과거 파일/glb", pats) == "99. 과거 파일"
+    assert rules.excluded_folder("AED/이전파일", pats) == "이전파일"
+    assert rules.excluded_folder("Bold/folder", pats) is None
     assert rules.excluded_folder("AED/웹콘텐츠/3D에셋/glb", pats) is None
     # substring is not enough: 'template' is not 'temp'
     assert rules.excluded_folder("AED/template", pats) is None

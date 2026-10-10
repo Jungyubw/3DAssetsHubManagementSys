@@ -1,17 +1,7 @@
 """Asset name, tags and description (SPEC 규칙 4)."""
 from __future__ import annotations
 
-import re
-
-from .rules import path_segments
-
-
-def has_keyword(text: str, word: str) -> bool:
-    """Latin keywords match whole words only ('hair' not in 'chair'); Korean ones match as substrings."""
-    word = word.lower()
-    if word.isascii():
-        return re.search(rf"(?<![a-z]){re.escape(word)}(?![a-z])", text) is not None
-    return word in text
+from .rules import has_keyword, path_segments
 
 
 def _text(file_name: str, path: str) -> str:

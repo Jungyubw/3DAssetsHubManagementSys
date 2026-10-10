@@ -1,7 +1,6 @@
 """Parsing helpers for selection and duplicate / revision / variant decisions (SPEC 규칙 1-2)."""
 from __future__ import annotations
 
-import fnmatch
 import re
 from dataclasses import dataclass
 
@@ -23,12 +22,19 @@ def path_segments(path: str) -> list[str]:
     return [s for s in path.split("/") if s]
 
 
-def excluded_folder(path: str, patterns: list[str]) -> str | None:
-    """Return the first folder name in path matching an exclusion pattern (case-insensitive)."""
-    lowered = [p.lower() for p in patterns]
+def has_keyword(text: str, word: str) -> bool:
+    """Latin keywords match whole words only ('hair' not in 'chair', 'bak' in 'GLB_bak');
+    Korean ones match as substrings ('백업' in '2022 캐릭터 백업')."""
+    text, word = text.lower(), word.lower()
+    if word.isascii():
+        return re.search(rf"(?<![a-z]){re.escape(word)}(?![a-z])", text) is not None
+    return word in text
+
+
+def excluded_folder(path: str, keywords: list[str]) -> str | None:
+    """Return the first folder name in path containing an exclusion keyword."""
     for segment in path_segments(path):
-        name = segment.lower()
-        if any(fnmatch.fnmatchcase(name, p) for p in lowered):
+        if any(has_keyword(segment, k) for k in keywords):
             return segment
     return None
 

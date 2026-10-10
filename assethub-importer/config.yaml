@@ -13,8 +13,10 @@ limits:
 selection:
   extensions: [".glb"]
   mime_types: ["model/gltf-binary"]
-  # Folder names (case-insensitive, glob) that exclude a file anywhere in its path
-  exclude_folders: ["_이전*", "이전", "old", "backup", "bak", "archive", "temp", "tmp"]
+  # A file is excluded when any folder in its path contains one of these keywords.
+  # Latin keywords match whole words ("bak" hits "#08.개발GLB_bak", "temp" does not hit "template");
+  # Korean keywords match anywhere in the folder name ("백업" hits "2022 캐릭터 백업").
+  exclude_folders: ["이전", "old", "backup", "bak", "archive", "temp", "tmp", "백업", "과거"]
   # Drives or paths to skip entirely (e.g. personal Desktop backups)
   exclude_drives: []
 
