@@ -115,36 +115,81 @@ def build_plan(inventory: list[dict], hub_assets: list[dict], hub_projects: list
             latest.decision = "register"
             latest.reason = "latest revision" if len(group) > 1 else "unique"
 
-    # 3. 프로젝트 매핑, 4. 이름·태그·설명
+    # 3. 프로젝트 매핑
     drive_to_project = {m["shared_drive"].strip(): m["hub_project"].strip() for m in mapping if m.get("hub_project")}
+    drive_category = {m["shared_drive"].strip(): m["default_category"].strip()
+                      for m in mapping if (m.get("default_category") or "").strip()}
     hub_project_names = {p["name"].strip() for p in hub_projects}
-    used_names: dict[str, set[str]] = defaultdict(set)
+    hub_names: dict[str, set[str]] = defaultdict(set)
     for r in hub_assets:
-        used_names[r["project_name"].strip()].add(r["name"])
+        hub_names[r["project_name"].strip()].add(r["name"])
+
+    # 4. 이름: 분류_대상_변형_v번호, 같은 프로젝트에서 겹치면 상위 폴더명을 붙여 구분
+    named = [f for f in files if f.decision in ("register", "too-large")]
+    info: dict[int, dict] = {}
+    for f in named:
+        drive_name = f.row["shared_drive"].strip()
+        category, ambiguous = naming.classify(f.row["file_name"], f.row["path"], config["classification"])
+        if ambiguous and drive_name in drive_category:
+            category, ambiguous = drive_category[drive_name], False
+        info[id(f)] = {"project": drive_to_project.get(drive_name, drive_name), "category": category,
+                       "ambiguous": ambiguous, "depth": 0,
+                       "folders": naming.qualifier_folders(f.row["path"], f.parsed.target,
+                                                           config["naming"].get("generic_folders", []))}
+    max_depth = config["naming"].get("max_folder_qualifiers", 3)
+
+    def name_of(f: _File) -> str:
+        i = info[id(f)]
+        qualifier = naming.folder_qualifier(i["folders"], i["depth"])
+        target = f"{qualifier}_{f.parsed.target}" if qualifier else f.parsed.target
+        return naming.asset_name(i["category"], target, f.parsed.variant, f.n)
+
+    names = {id(f): name_of(f) for f in named}
+    for _ in range(max_depth):
+        groups: dict[tuple, list[_File]] = defaultdict(list)
+        for f in named:
+            groups[(info[id(f)]["project"], names[id(f)])].append(f)
+        clashing = [g for (proj, name), g in groups.items() if len(g) > 1 or name in hub_names[proj]]
+        if not clashing:
+            break
+        for g in clashing:
+            for f in g:
+                if info[id(f)]["depth"] < len(info[id(f)]["folders"]):
+                    info[id(f)]["depth"] += 1
+                    names[id(f)] = name_of(f)
+    # Still clashing after folder qualifiers: number them in a stable order
+    taken: dict[str, set[str]] = defaultdict(lambda: set())
+    for proj, existing in hub_names.items():
+        taken[proj] |= existing
+    for f in sorted(named, key=lambda x: (x.row["path"], x.row["file_name"], x.row["drive_file_id"])):
+        proj, name = info[id(f)]["project"], names[id(f)]
+        base, n = name, 2
+        while name in taken[proj]:
+            name, n = f"{base}_{n}", n + 1
+        taken[proj].add(name)
+        names[id(f)] = name
 
     out = []
     for f in files:
         row = f.row
-        project = drive_to_project.get(row["shared_drive"].strip(), row["shared_drive"].strip())
-        category, ambiguous = naming.classify(row["file_name"], row["path"], config["classification"])
+        drive_name = row["shared_drive"].strip()
+        project = drive_to_project.get(drive_name, drive_name)
         name = tags = desc = ""
         reason = f.reason
-        if f.decision in ("register", "too-large"):
-            name = naming.asset_name(category, f.parsed.target, f.parsed.variant, f.n)
-            base, i = name, 2
-            while name in used_names[project]:
-                name, i = f"{base}_{i}", i + 1
-            if name != base:
-                reason += f"; name collision, renamed from {base}"
-            used_names[project].add(name)
-            tags = ";".join(naming.build_tags(category, row["file_name"], row["path"], config, list(f.extra_tags)))
+        if id(f) in info:
+            i = info[id(f)]
+            name = names[id(f)]
+            if i["depth"]:
+                reason += "; folder name added to avoid a name clash"
+            tags = ";".join(naming.build_tags(i["category"], row["file_name"], row["path"], config,
+                                              list(f.extra_tags)))
             desc = naming.description(
                 config["naming"]["description"], drive=row["shared_drive"], path=row["path"],
                 file_name=row["file_name"], size_bytes=f.size, modified_time=row["modified_time"],
                 file_id=row["drive_file_id"],
             )
-            if ambiguous:
-                reason += f"; category guess '{category}'"
+            if i["ambiguous"]:
+                reason += f"; category guess '{i['category']}'"
         out.append({
             "drive_file_id": row["drive_file_id"],
             "shared_drive": row["shared_drive"],

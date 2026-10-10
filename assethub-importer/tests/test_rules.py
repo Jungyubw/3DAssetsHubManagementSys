@@ -54,3 +54,11 @@ def test_classify_and_name():
 def test_tags_include_category_folder_and_import_tag():
     tags = naming.build_tags("char", "npc_barista.glb", "방송대 제안작업/AED_실감형콘텐츠_S2/glb", CFG, ["PJ_other"])
     assert tags == ["character", "npc", "AED_실감형콘텐츠_S2", "PJ_other", "drive-import-2026-10"]
+
+
+def test_qualifier_folders_skip_generic_version_and_repeats():
+    generic = CFG["naming"]["generic_folders"]
+    path = "#2025/1. ETC/assets(v.1.7.33)/v.1.7.33/glbs"
+    assert naming.qualifier_folders(path, "rice_small", generic)[:2] == ["assets_v_1_7_33", "1_etc"]
+    assert naming.qualifier_folders("작업/eq_pump_a/glb", "eq_pump_a", generic) == ["작업"]
+    assert naming.qualifier_folders("2022/20221103", "web", generic) == ["20221103", "2022"]

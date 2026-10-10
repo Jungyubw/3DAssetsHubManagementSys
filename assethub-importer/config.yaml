@@ -16,7 +16,8 @@ selection:
   # A file is excluded when any folder in its path contains one of these keywords.
   # Latin keywords match whole words ("bak" hits "#08.개발GLB_bak", "temp" does not hit "template");
   # Korean keywords match anywhere in the folder name ("백업" hits "2022 캐릭터 백업").
-  exclude_folders: ["이전", "old", "backup", "bak", "archive", "temp", "tmp", "백업", "과거"]
+  exclude_folders: ["이전", "old", "backup", "bak", "archive", "temp", "tmp", "백업", "과거",
+                    "test", "테스트", "삭제"]
   # Drives or paths to skip entirely (e.g. personal Desktop backups)
   exclude_drives: []
 
@@ -25,7 +26,8 @@ variants:
   folders: ["원본", "unity", "realistic"]
 
 classification:
-  # Checked in order; first match wins, otherwise "obj".
+  # Checked in order; first match wins. With no match, the drive's default_category
+  # in mapping.csv is used, otherwise "obj".
   # Latin keywords match whole words only (hair does not match chair); Korean ones match anywhere.
   char: ["캐릭터", "character", "characters", "npc", "player", "hair", "body"]
   anim: ["clips", "clip", "anim", "animation", "동작"]
@@ -48,5 +50,12 @@ detail_tags: ["npc", "player", "animation", "parts"]
 
 naming:
   pattern: "{category}_{target}{variant}_v{n}"
+  # Names clashing in one project get parent folder names added, up to this many levels,
+  # e.g. obj_0_0_0_v1 -> obj_2종_glb_0_0_0_v1. Still clashing -> _2, _3 suffix.
+  max_folder_qualifiers: 3
+  # Folder names never used for that: they say nothing about the model
+  generic_folders: ["glb", "glbs", "gltf", "assets", "asset", "3d", "3d에셋", "models", "model",
+                    "fbx", "export", "exports", "output", "resources", "리소스", "3d 리소스",
+                    "배포", "개발", "최종", "final"]
   description: "{drive} › {subpath}에서 가져온 GLB. 원본 파일 {file_name}, {size_mb}MB, 수정 {modified}. 삼각형 {triangles}개, 애니메이션 {animations}개. Drive ID {file_id}"
   change_memo: "최초 등록 (드라이브 일괄 등록)"

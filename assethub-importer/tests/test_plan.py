@@ -78,7 +78,7 @@ def test_duplicate_of_hub_file_under_other_name_is_skipped():
 def test_name_collision_in_project_is_renamed():
     inv = [f("n1", "chair.glb", "A/props"), f("n2", "chair.glb", "B/props")]
     rows = by_id(build_plan(inv, [], [], [], CFG))
-    assert {rows["n1"]["asset_name"], rows["n2"]["asset_name"]} == {"obj_chair_v1", "obj_chair_v1_2"}
+    assert {rows["n1"]["asset_name"], rows["n2"]["asset_name"]} == {"obj_a_props_chair_v1", "obj_b_props_chair_v1"}
 
 
 def test_summary_counts_match_plan():
@@ -87,3 +87,34 @@ def test_summary_counts_match_plan():
     summary = summarize(rows)
     assert sum(r["register"] + r["skip-excluded"] for r in summary) == len(rows)
     assert {r["hub_project"]: r["register"] for r in summary} == {D1: 1, D2: 1}
+
+
+def test_clashing_names_get_parent_folder():
+    inv = [f("q1", "0-0-0.glb", "06. 3D/glb/2종 GLB"), f("q2", "0-0-0.glb", "06. 3D/glb/1종 GLB"),
+           f("q3", "door.glb", "A/props")]
+    rows = by_id(build_plan(inv, [], [], [], CFG))
+    assert rows["q1"]["asset_name"] == "obj_2종_glb_0_0_0_v1"
+    assert rows["q2"]["asset_name"] == "obj_1종_glb_0_0_0_v1"
+    assert rows["q3"]["asset_name"] == "obj_door_v1"  # no clash, no folder name
+
+
+def test_clash_with_same_parent_name_goes_up_a_level():
+    inv = [f("r1", "web.glb", "S1/glb"), f("r2", "web.glb", "S2/glb")]
+    rows = by_id(build_plan(inv, [], [], [], CFG))
+    assert {rows["r1"]["asset_name"], rows["r2"]["asset_name"]} == {"obj_s1_web_v1", "obj_s2_web_v1"}  # "glb" is a generic folder
+
+
+def test_drive_default_category_applies_only_without_keyword():
+    mapping = [{"shared_drive": D1, "hub_project": "P", "default_category": "twin"}]
+    inv = [f("t1", "pump.glb", "1공장"), f("t2", "worker.glb", "캐릭터")]
+    rows = by_id(build_plan(inv, [], [], mapping, CFG))
+    assert rows["t1"]["asset_name"] == "twin_pump_v1"
+    assert "category guess" not in rows["t1"]["reason"]
+    assert rows["t2"]["asset_name"] == "char_worker_v1"
+
+
+def test_test_and_delete_folders_excluded():
+    inv = [f("u1", "a.glb", "#12. 테스트할 3D GLB"), f("u2", "b.glb", "s5_ optimization_test"),
+           f("u3", "c.glb", "삭제예정"), f("u4", "d.glb", "testbed")]
+    rows = by_id(build_plan(inv, [], [], [], CFG))
+    assert [rows[i]["decision"] for i in ("u1", "u2", "u3", "u4")] == ["skip-excluded"] * 3 + ["register"]

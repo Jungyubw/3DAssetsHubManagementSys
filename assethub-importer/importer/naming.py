@@ -1,7 +1,9 @@
 """Asset name, tags and description (SPEC 규칙 4)."""
 from __future__ import annotations
 
-from .rules import has_keyword, path_segments
+import re
+
+from .rules import has_keyword, normalize_token, path_segments
 
 
 def _text(file_name: str, path: str) -> str:
@@ -19,6 +21,27 @@ def classify(file_name: str, path: str, keywords: dict[str, list[str]]) -> tuple
 
 def asset_name(category: str, target: str, variant: str, n: int) -> str:
     return f"{category}_{target}{'_' + variant if variant else ''}_v{n}"
+
+
+_VERSION_ONLY = re.compile(r"^v_?\d+(?:_\d+)*$")  # v2, v1_14, v_1_7_33 (from "v.1.7.33")
+
+
+def qualifier_folders(path: str, target: str, generic: list[str]) -> list[str]:
+    """Folder names usable to tell clashing names apart, deepest first.
+    Skips generic folders (glb, assets, …), version-only ones (v.1.7.33) and ones repeating the target."""
+    generic_set = {normalize_token(g) for g in generic}
+    out = []
+    for segment in reversed(path_segments(path)):
+        token = normalize_token(segment)
+        if not token or token in generic_set or _VERSION_ONLY.match(token) or token == target:
+            continue
+        out.append(token)
+    return out
+
+
+def folder_qualifier(folders: list[str], depth: int) -> str:
+    """Join the `depth` deepest usable folders in path order: (['2종_glb', '단면_glb'], 1) -> '2종_glb'."""
+    return "_".join(reversed(folders[:depth])) if depth > 0 else ""
 
 
 def content_folder(path: str, level: int) -> str:

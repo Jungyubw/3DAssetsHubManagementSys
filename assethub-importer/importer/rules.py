@@ -15,7 +15,7 @@ DECISIONS = (
 
 _STEM_VERSION = re.compile(r"[_\-\s.]*v(\d+(?:[._]\d+)*)$", re.IGNORECASE)
 _SEGMENT_VERSION = re.compile(r"[_\-\s]*v\d+(?:\.\d+)*", re.IGNORECASE)
-_SEPARATORS = re.compile(r"[\s\-.]+")
+_SEPARATORS = re.compile(r"[^\w]+")  # anything but letters (incl. Korean), digits, "_"
 
 
 def path_segments(path: str) -> list[str]:
