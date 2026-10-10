@@ -23,9 +23,10 @@ variants:
   folders: ["원본", "unity", "realistic"]
 
 classification:
-  # Checked in order; first match wins, otherwise "obj"
-  char: ["캐릭터", "character", "npc", "player", "hair", "body"]
-  anim: ["clips", "anim", "동작"]
+  # Checked in order; first match wins, otherwise "obj".
+  # Latin keywords match whole words only (hair does not match chair); Korean ones match anywhere.
+  char: ["캐릭터", "character", "characters", "npc", "player", "hair", "body"]
+  anim: ["clips", "clip", "anim", "animation", "동작"]
   space: ["room", "scene", "씬", "map", "ground", "city"]
   twin: ["asbuilt", "설비", "factory"]
 
@@ -36,6 +37,10 @@ hub_category_tags:
   anim: object
   parts: object
   twin: twin
+
+# Which folder under the drive becomes the content-folder tag (1 = first level).
+# Verify against inventory.csv: e.g. <drive>/방송대 제안작업/AED_실감형콘텐츠_S2/... -> 2
+content_folder_level: 2
 
 detail_tags: ["npc", "player", "animation", "parts"]
 
