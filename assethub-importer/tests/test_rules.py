@@ -9,7 +9,8 @@ def test_excluded_folder_matches_glob_and_case():
     assert rules.excluded_folder("AED/웹콘텐츠/_이전_v1.14/3D에셋/glb", pats) == "_이전_v1.14"
     assert rules.excluded_folder("AED/Backup/glb", pats) == "Backup"
     assert rules.excluded_folder("03. 3D라이브러리/#08.개발GLB_bak", pats) == "#08.개발GLB_bak"
-    assert rules.excluded_folder("캐릭터/2022 캐릭터 백업", pats) == "2022 캐릭터 백업"
+    # '백업' folders are registered by user decision (152 models exist only there)
+    assert rules.excluded_folder("캐릭터/2022 캐릭터 백업", pats) is None
     # '과거' is not a keyword: TF_디지털트윈 keeps finished projects (382 unique models) under "99. 과거 파일"
     assert rules.excluded_folder("99. 과거 파일/0. 프로젝트/02. 리파코", pats) is None
     assert rules.excluded_folder("AED/이전파일", pats) == "이전파일"

@@ -7,7 +7,7 @@ from importer.config import load_settings
 def test_config_loads():
     s = load_settings()
     assert s.config["limits"]["max_upload_mb"] == 200
-    assert "백업" in s.config["selection"]["exclude_folders"]
+    assert "테스트" in s.config["selection"]["exclude_folders"]
 
 
 def test_apply_defaults_to_dry_run():

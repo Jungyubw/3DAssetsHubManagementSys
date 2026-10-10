@@ -24,7 +24,7 @@ def path_segments(path: str) -> list[str]:
 
 def has_keyword(text: str, word: str) -> bool:
     """Latin keywords match whole words only ('hair' not in 'chair', 'bak' in 'GLB_bak');
-    Korean ones match as substrings ('백업' in '2022 캐릭터 백업')."""
+    Korean ones match as substrings ('테스트' in '#12. 테스트할 3D GLB')."""
     text, word = text.lower(), word.lower()
     if word.isascii():
         return re.search(rf"(?<![a-z]){re.escape(word)}(?![a-z])", text) is not None
