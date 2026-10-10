@@ -16,7 +16,7 @@ selection:
   # A file is excluded when any folder in its path contains one of these keywords.
   # Latin keywords match whole words ("bak" hits "#08.개발GLB_bak", "temp" does not hit "template");
   # Korean keywords match anywhere in the folder name ("백업" hits "2022 캐릭터 백업").
-  exclude_folders: ["이전", "old", "backup", "bak", "archive", "temp", "tmp", "백업", "과거",
+  exclude_folders: ["이전", "old", "backup", "bak", "archive", "temp", "tmp", "백업",
                     "test", "테스트", "삭제"]
   # Drives or paths to skip entirely (e.g. personal Desktop backups)
   exclude_drives: []
