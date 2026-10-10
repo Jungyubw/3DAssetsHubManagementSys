@@ -1,0 +1,45 @@
+# Rules from docs/SPEC.md. Change keywords and limits here, not in code.
+
+output_dir: output
+ledger_db: output/ledger.sqlite
+import_tag: drive-import-2026-10
+
+limits:
+  max_upload_mb: 200          # pending dev team confirmation
+  hub_detail_concurrency: 8   # parallel GET /assets/{id}
+  retry_attempts: 3
+  sheet_sync_batch: 20
+
+selection:
+  extensions: [".glb"]
+  mime_types: ["model/gltf-binary"]
+  # Folder names (case-insensitive, glob) that exclude a file anywhere in its path
+  exclude_folders: ["_이전*", "이전", "old", "backup", "bak", "archive", "temp", "tmp"]
+  # Drives or paths to skip entirely (e.g. personal Desktop backups)
+  exclude_drives: []
+
+variants:
+  suffixes: ["dressed", "lite", "anim", "asbuilt", "raw"]
+  folders: ["원본", "unity", "realistic"]
+
+classification:
+  # Checked in order; first match wins, otherwise "obj"
+  char: ["캐릭터", "character", "npc", "player", "hair", "body"]
+  anim: ["clips", "anim", "동작"]
+  space: ["room", "scene", "씬", "map", "ground", "city"]
+  twin: ["asbuilt", "설비", "factory"]
+
+hub_category_tags:
+  char: character
+  obj: object
+  space: space
+  anim: object
+  parts: object
+  twin: twin
+
+detail_tags: ["npc", "player", "animation", "parts"]
+
+naming:
+  pattern: "{category}_{target}{variant}_v{n}"
+  description: "{drive} › {subpath}에서 가져온 GLB. 원본 파일 {file_name}, {size_mb}MB, 수정 {modified}. 삼각형 {triangles}개, 애니메이션 {animations}개. Drive ID {file_id}"
+  change_memo: "최초 등록 (드라이브 일괄 등록)"

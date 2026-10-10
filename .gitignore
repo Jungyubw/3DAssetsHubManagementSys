@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# Secrets and auth (never commit)
+.env
+credentials.json
+client_secret*.json
+token.json
+*.token
+*.pem
+
+# Generated outputs and local state
+output/
+*.sqlite
+*.sqlite3
+*.db
+downloads/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/

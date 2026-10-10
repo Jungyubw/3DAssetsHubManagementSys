@@ -1,0 +1,28 @@
+[project]
+name = "assethub-importer"
+version = "0.1.0"
+description = "Bulk-register GLB models from Google shared drives into AssetHub"
+requires-python = ">=3.11"
+dependencies = [
+    "google-api-python-client>=2.100",
+    "google-auth-oauthlib>=1.2",
+    "httpx>=0.27",
+    "pygltflib>=1.16",
+    "python-dotenv>=1.0",
+    "pyyaml>=6.0",
+    "rich>=13.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[project.scripts]
+assethub-importer = "cli:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+py-modules = ["cli"]
+packages = ["importer"]
